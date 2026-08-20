@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logan's Weekly Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F7F1E3;
+    --parchment:#EEE1C4;
+    --paper:#FFFDF7;
+    --ink:#2B2420;
+    --ink-soft:#5B5147;
+    --olive:#3F4B3A;
+    --olive-light:#5C6B54;
+    --brick:#A94E2C;
+    --brick-dark:#7E3A20;
+    --mustard:#C6963A;
+    --line:#D9C9A6;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    line-height:1.5;
+  }
+
+  ::selection{background:var(--mustard); color:var(--ink);}
+
+  h1,h2,h3,.display{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:4.5rem 1.5rem 3rem;
+    text-align:center;
+    max-width:760px;
+    margin:0 auto;
+  }
+  .hero .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.78rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brick);
+    margin-bottom:0.9rem;
+    display:inline-block;
+  }
+  .hero h1{
+    font-size:clamp(2.3rem, 5vw, 3.4rem);
+    color:var(--ink);
+    font-variation-settings:"opsz" 40;
+  }
+  .hero p{
+    margin-top:1rem;
+    font-size:1.08rem;
+    color:var(--ink-soft);
+    max-width:520px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+
+  /* ---------- Layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:1fr 340px;
+    gap:2.5rem;
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 1.5rem 5rem;
+    align-items:start;
+  }
+  @media (max-width:920px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:0.75rem;
+    margin-bottom:1.5rem;
+    padding-bottom:1rem;
+    border-bottom:1px solid var(--line);
+  }
+  .toolbar .count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+  }
+  .toolbar .count strong{color:var(--brick); font-weight:600;}
+  #searchBox{
+    font-family:'Work Sans', sans-serif;
+    font-size:0.9rem;
+    padding:0.55rem 0.9rem;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--paper);
+    color:var(--ink);
+    width:200px;
+    outline:none;
+  }
+  #searchBox:focus{border-color:var(--olive);}
+
+  /* ---------- Meal grid ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
+    gap:1rem;
+  }
+
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:1.1rem 1.1rem 1rem;
+    cursor:pointer;
+    transition:transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    position:relative;
+  }
+  .card:hover{
+    transform:translateY(-3px);
+    border-color:var(--olive-light);
+  }
+  .card.selected{
+    border-color:var(--brick);
+    background:#FBF0E6;
+  }
+  .card .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    letter-spacing:0.05em;
+  }
+  .card .icon{
+    font-size:1.6rem;
+    margin:0.35rem 0 0.5rem;
+  }
+  .card h3{
+    font-size:1.08rem;
+    color:var(--ink);
+    line-height:1.25;
+  }
+  .card .ing-count{
+    margin-top:0.5rem;
+    font-size:0.8rem;
+    color:var(--ink-soft);
+  }
+  .card .check{
+    position:absolute;
+    top:0.9rem;
+    right:0.9rem;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:0.75rem;
+    color:transparent;
+    transition:all 0.15s ease;
+  }
+  .card.selected .check{
+    background:var(--brick);
+    border-color:var(--brick);
+    color:var(--paper);
+  }
+
+  .empty-msg{
+    grid-column:1/-1;
+    text-align:center;
+    color:var(--ink-soft);
+    padding:2rem;
+    font-style:italic;
+  }
+
+  /* ---------- Receipt ---------- */
+  .receipt-wrap{
+    position:sticky;
+    top:2rem;
+  }
+  .receipt{
+    background:var(--paper);
+    padding:1.6rem 1.5rem 1.2rem;
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--ink);
+    position:relative;
+    box-shadow:0 1px 3px rgba(43,36,32,0.08);
+  }
+  .receipt::before,
+  .receipt::after{
+    content:"";
+    position:absolute;
+    left:0; right:0;
+    height:10px;
+    background-image:
+      linear-gradient(135deg, var(--cream) 25%, transparent 25%),
+      linear-gradient(225deg, var(--cream) 25%, transparent 25%);
+    background-size:14px 14px;
+    background-repeat:repeat-x;
+  }
+  .receipt::before{top:-1px; transform:translateY(-100%);}
+  .receipt::after{bottom:-1px; transform:translateY(100%) rotate(180deg);}
+
+  .receipt h2{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:1rem;
+    text-align:center;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+  }
+  .receipt .sub{
+    text-align:center;
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    margin-top:0.2rem;
+  }
+  .receipt .divider{
+    border:none;
+    border-top:1px dashed var(--line);
+    margin:0.9rem 0;
+  }
+
+  .receipt-meals{
+    font-size:0.82rem;
+    max-height:160px;
+    overflow-y:auto;
+  }
+  .receipt-meals .rline{
+    display:flex;
+    justify-content:space-between;
+    gap:0.5rem;
+    padding:0.2rem 0;
+  }
+  .receipt-meals .rline .rm-name{color:var(--ink);}
+  .receipt-meals .rline .rm-x{
+    color:var(--brick);
+    cursor:pointer;
+    font-weight:600;
+  }
+
+  .receipt-ing{
+    font-size:0.8rem;
+    max-height:280px;
+    overflow-y:auto;
+  }
+  .receipt-ing .iline{
+    display:flex;
+    justify-content:space-between;
+    gap:0.5rem;
+    padding:0.22rem 0;
+    border-bottom:1px dotted var(--line);
+  }
+  .receipt-ing .iline:last-child{border-bottom:none;}
+  .receipt-ing .i-name{color:var(--ink); text-transform:capitalize;}
+  .receipt-ing .i-qty{color:var(--olive); white-space:nowrap; font-weight:500;}
+
+  .receipt-empty{
+    text-align:center;
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    padding:1.2rem 0;
+  }
+
+  .receipt-total{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.85rem;
+    font-weight:600;
+    margin-top:0.9rem;
+    padding-top:0.7rem;
+    border-top:1px dashed var(--line);
+  }
+
+  .receipt-actions{
+    display:flex;
+    gap:0.5rem;
+    margin-top:1.1rem;
+  }
+  .receipt-actions button{
+    flex:1;
+    font-family:'Work Sans', sans-serif;
+    font-size:0.82rem;
+    font-weight:500;
+    padding:0.55rem 0.6rem;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background:var(--cream);
+    color:var(--ink);
+    cursor:pointer;
+    transition:background 0.15s ease;
+  }
+  .receipt-actions button:hover{background:var(--parchment);}
+  .receipt-actions button.primary{
+    background:var(--olive);
+    border-color:var(--olive);
+    color:var(--paper);
+  }
+  .receipt-actions button.primary:hover{background:var(--olive-light);}
+
+  .toast{
+    position:fixed;
+    bottom:1.5rem;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);
+    color:var(--paper);
+    padding:0.6rem 1.1rem;
+    border-radius:8px;
+    font-family:'Work Sans', sans-serif;
+    font-size:0.85rem;
+    opacity:0;
+    pointer-events:none;
+    transition:all 0.25s ease;
+    z-index:50;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .preview-wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 1.5rem;
+  }
+  .preview-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:1.3rem 1.4rem 1.4rem;
+  }
+  .preview-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:0.4rem;
+    margin-bottom:0.8rem;
+  }
+  .preview-head h2{
+    font-size:1.1rem;
+    color:var(--ink);
+  }
+  .preview-hint{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--ink-soft);
+  }
+  .preview-body{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.82rem;
+    line-height:1.6;
+    color:var(--ink);
+    white-space:pre-wrap;
+    word-break:break-word;
+    background:var(--cream);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:1rem 1.1rem;
+    margin:0;
+    max-height:340px;
+    overflow-y:auto;
+  }
+
+  footer{
+    text-align:center;
+    padding:2rem 1.5rem 3rem;
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  @media (max-width:920px){
+    .receipt-wrap{position:relative; top:0; margin-top:2rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="eyebrow">Logan Augustine's kitchen</span>
+  <h1>Pick this week's meals</h1>
+  <p>Tap as many dinners as you'd like below. Your grocery list builds itself on the right, combining ingredients across every meal you choose.</p>
+</div>
+
+<div class="layout">
+  <div>
+    <div class="toolbar">
+      <span class="count"><strong id="selCount">0</strong> meal<span id="selPlural">s</span> selected</span>
+      <input type="text" id="searchBox" placeholder="Search meals or ingredients...">
+    </div>
+    <div class="grid" id="mealGrid"></div>
+  </div>
+
+  <div class="receipt-wrap">
+    <div class="receipt">
+      <h2>This week's plan</h2>
+      <div class="sub" id="receiptDate"></div>
+      <hr class="divider">
+      <div class="receipt-meals" id="receiptMeals">
+        <div class="receipt-empty">No meals selected yet</div>
+      </div>
+      <hr class="divider">
+      <div class="receipt-ing" id="receiptIng"></div>
+      <div class="receipt-total" id="receiptTotal" style="display:none;">
+        <span>Items</span>
+        <span id="itemCount">0</span>
+      </div>
+      <div class="receipt-actions">
+        <button id="clearBtn">Clear</button>
+        <button id="copyBtn" class="primary">Copy list</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="preview-card">
+      <div class="preview-head">
+        <h2>Copyable list</h2>
+        <span class="preview-hint">This is exactly what "Copy list" copies</span>
+      </div>
+      <pre id="copyPreview" class="preview-body">Select a meal to build your list.</pre>
+    </div>
+  </div>
+</div>
+
+<footer>Built from Logan's original meal &amp; ingredient list &middot; 17 dinners on rotation</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+// Quantities are scaled to feed 2 people with leftovers.
+const MEALS = [
+  {n:1, name:"Shredded chicken tacos", icon:"\uD83C\uDF2E", ing:[
+    ["Chicken breast","lb",1.5],["Picante sauce","oz",16],["Tortillas","",8],
+    ["Shredded cheese","cup",1],["Salsa","cup",1]]},
+  {n:2, name:"Spaghetti", icon:"\uD83C\uDF5D", ing:[
+    ["Spaghetti noodles","oz",12],["Pasta sauce","oz",24],["Beef","lb",1],
+    ["Parmesan cheese","cup",0.25],["Italian seasoning","tbsp",1]]},
+  {n:3, name:"Spaghetti with meatballs", icon:"\uD83C\uDF5D", ing:[
+    ["Noodles","oz",12],["Pasta sauce","oz",24],["Frozen meatballs","",12],
+    ["Parmesan cheese","cup",0.25],["Italian seasoning","tbsp",1]]},
+  {n:4, name:"Tilapia and rice with peas", icon:"\uD83D\uDC1F", ing:[
+    ["Frozen tilapia","fillets",3],["Rice","cup",1],["Paprika","tsp",1],
+    ["Garlic powder","tsp",1],["Olive oil","tbsp",2],["Aluminum foil","sheet",1],["Sweet peas","oz",15]]},
+  {n:5, name:"Chicken fried rice", icon:"\uD83C\uDF5A", ing:[
+    ["Rice","cup",1],["Chicken breast","lb",1],["Frozen peas and carrots","cup",1],
+    ["Soy sauce","tbsp",3],["Egg","",2],["Olive oil","tbsp",2]]},
+  {n:6, name:"Shredded chicken baked potatoes", icon:"\uD83E\uDD54", ing:[
+    ["Russet potato","",3],["Sour cream","oz",8],["Chicken breast","lb",1.5],
+    ["Shredded cheddar cheese","cup",1],["Chives","tbsp",2],["Salt","tsp",1],["Pepper","tsp",0.5],["Butter","tbsp",3]]},
+  {n:7, name:"Beef bean burritos", icon:"\uD83C\uDF2F", ing:[
+    ["Tortillas","",6],["Refried beans","oz",16],["Beef","lb",1],
+    ["Mexican blend shredded cheese","cup",1],["Mexican rice","cup",1.5],["Salsa","cup",1]]},
+  {n:8, name:"Tacos", icon:"\uD83C\uDF2E", ing:[
+    ["Taco shells","",8],["Beef","lb",1.25],["Taco seasoning","packet",1],["Cheese","cup",1],
+    ["Tomato","",2],["Lettuce","cup",2],["Mexican rice","cup",1.5]]},
+  {n:9, name:"Chicken alfredo pasta", icon:"\uD83C\uDF5D", ing:[
+    ["Fettuccini noodles","oz",12],["Alfredo sauce","oz",16],["Chicken breast","lb",1.5],
+    ["Italian seasoning","tbsp",1],["Parmesan cheese","cup",0.25]]},
+  {n:10, name:"Omelets", icon:"\uD83C\uDF73", ing:[
+    ["Eggs","",6],["Spinach","cup",1],["Tomato","",1],["Onion","",0.5],["Ham","oz",4],["Cheese","cup",0.5]]},
+  {n:11, name:"Biscuits and gravy", icon:"\uD83E\uDDC1", ing:[
+    ["Jumbo biscuit can","can",1],["Gravy mix","packet",2],["Milk","cup",2],
+    ["Sausage","lb",1],["Salt","tsp",0.5],["Pepper","tsp",0.5]]},
+  {n:12, name:"Meatball subs", icon:"\uD83E\uDD6A", ing:[
+    ["Sub style bread","rolls",4],["Marinara sauce","oz",16],["Meatballs","",16],["Parmesan cheese","cup",0.25]]},
+  {n:13, name:"Quesadillas", icon:"\uD83E\uDDC0", ing:[
+    ["Large tortillas","",4],["Chicken breast","lb",1],["Cheese","cup",1.5],["Onion","",0.5],
+    ["Green peppers","",1],["Salsa","cup",1],["Salt","tsp",0.5],["Butter","tbsp",2]]},
+  {n:14, name:"Greek salad", icon:"\uD83E\uDD57", ing:[
+    ["Spinach","cup",2],["Lettuce","cup",2],["Cucumbers","",1],["Chickpeas","oz",15],
+    ["Boiled eggs","",3],["Chicken","lb",1],["Feta cheese","cup",0.5],["Dressing","cup",0.25]]},
+  {n:15, name:"Grilled vegetables", icon:"\uD83C\uDF46", ing:[
+    ["Asparagus","bunch",1],["Zucchini","",2],["Squash","",2],["Tomato","",2],
+    ["Cauliflower","head",0.5],["Red onions","",1],["Peppers","",2],["Chicken","lb",1.5]]},
+  {n:16, name:"Cowboy caviar", icon:"\uD83E\uDED8", ing:[
+    ["Black beans","oz",15],["Garbanzo beans","oz",15],["Jalapenos","",2],["Bell pepper","",1],
+    ["Red onion","",0.5],["Tomato","",2],["Cilantro","cup",0.25],["Olive oil","tbsp",3],
+    ["Mexican seasoning","tbsp",1],["Avocado","",1]]},
+  {n:17, name:"Veggie stir fry", icon:"\uD83E\uDD62", ing:[
+    ["Green beans","cup",2],["Carrots","",2],["Bell pepper","",1],["Onion","",1],
+    ["Broccoli","cup",2],["Sweet peas","cup",1]]}
+];
+
+const selected = new Set();
+const grid = document.getElementById('mealGrid');
+const searchBox = document.getElementById('searchBox');
+
+function renderGrid(filter){
+  const q = (filter || '').trim().toLowerCase();
+  grid.innerHTML = '';
+  let shown = 0;
+  MEALS.forEach(meal => {
+    const matches = !q ||
+      meal.name.toLowerCase().includes(q) ||
+      meal.ing.some(i => i[0].toLowerCase().includes(q));
+    if (!matches) return;
+    shown++;
+    const card = document.createElement('div');
+    card.className = 'card' + (selected.has(meal.n) ? ' selected' : '');
+    card.innerHTML = `
+      <div class="check">&#10003;</div>
+      <div class="num">No. ${String(meal.n).padStart(2,'0')}</div>
+      <div class="icon">${meal.icon}</div>
+      <h3>${meal.name}</h3>
+      <div class="ing-count">${meal.ing.length} ingredients</div>
+    `;
+    card.addEventListener('click', () => toggleMeal(meal.n));
+    grid.appendChild(card);
+  });
+  if (shown === 0){
+    grid.innerHTML = '<div class="empty-msg">No meals match your search.</div>';
+  }
+}
+
+function toggleMeal(n){
+  if (selected.has(n)) selected.delete(n);
+  else selected.add(n);
+  renderGrid(searchBox.value);
+  renderReceipt();
+}
+
+function parseQty(q){
+  if (q === '' || q === null || q === undefined) return null;
+  if (typeof q === 'number') return q;
+  const s = String(q).trim();
+  if (s.includes('/')) {
+    const parts = s.split('/');
+    const num = parseFloat(parts[0]), den = parseFloat(parts[1]);
+    if (!isNaN(num) && !isNaN(den) && den !== 0) return num/den;
+  }
+  const f = parseFloat(s);
+  return isNaN(f) ? null : f;
+}
+
+function fmtNum(n){
+  if (Math.abs(n - Math.round(n)) < 0.001) return String(Math.round(n));
+  return (Math.round(n*100)/100).toString();
+}
+
+function renderReceipt(){
+  const chosen = MEALS.filter(m => selected.has(m.n));
+  const selCount = document.getElementById('selCount');
+  const selPlural = document.getElementById('selPlural');
+  selCount.textContent = chosen.length;
+  selPlural.textContent = chosen.length === 1 ? '' : 's';
+
+  const rMeals = document.getElementById('receiptMeals');
+  const rIng = document.getElementById('receiptIng');
+  const rTotal = document.getElementById('receiptTotal');
+  const dateEl = document.getElementById('receiptDate');
+
+  const today = new Date();
+  dateEl.textContent = today.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+
+  if (chosen.length === 0){
+    rMeals.innerHTML = '<div class="receipt-empty">No meals selected yet</div>';
+    rIng.innerHTML = '';
+    rTotal.style.display = 'none';
+    updatePreview(chosen);
+    return;
+  }
+
+  rMeals.innerHTML = chosen.map(m =>
+    `<div class="rline"><span class="rm-name">${m.icon} ${m.name}</span><span class="rm-x" data-n="${m.n}" title="Remove">&times;</span></div>`
+  ).join('');
+  rMeals.querySelectorAll('.rm-x').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMeal(parseInt(el.dataset.n, 10));
+    });
+  });
+
+  const merged = {};
+  chosen.forEach(m => {
+    m.ing.forEach(([name, unit, qty]) => {
+      const key = name.trim().toLowerCase();
+      if (!merged[key]) merged[key] = {name: name.trim(), entries: [], meals: new Set()};
+      merged[key].entries.push({unit: (unit || '').trim(), qty: parseQty(qty)});
+      merged[key].meals.add(m.name);
+    });
+  });
+
+  const lines = Object.values(merged).map(item => {
+    const byUnit = {};
+    let hasVague = false;
+    item.entries.forEach(e => {
+      if (e.qty === null){
+        hasVague = true;
+        return;
+      }
+      const u = e.unit || '';
+      byUnit[u] = (byUnit[u] || 0) + e.qty;
+    });
+    const parts = Object.entries(byUnit).map(([u, total]) =>
+      u ? `${fmtNum(total)} ${u}` : `x${fmtNum(total)}`
+    );
+    if (hasVague && parts.length === 0) parts.push('as needed');
+    else if (hasVague) parts.push('+more');
+    return {name: item.name, qty: parts.join(', '), meals: Array.from(item.meals).sort()};
+  }).sort((a,b) => a.name.localeCompare(b.name));
+
+  rIng.innerHTML = lines.map(l =>
+    `<div class="iline"><span class="i-name">${l.name}</span><span class="i-qty">${l.qty}</span></div>`
+  ).join('');
+
+  rTotal.style.display = 'flex';
+  document.getElementById('itemCount').textContent = lines.length;
+
+  updatePreview(chosen);
+}
+
+function fmtQty(unit, qty){
+  if (qty === '' || qty === null || qty === undefined) return '';
+  const n = fmtNum(typeof qty === 'number' ? qty : parseQty(qty));
+  return unit ? `${n} ${unit}` : n;
+}
+
+function buildListText(chosen){
+  const ordered = [...chosen].sort((a,b) => a.n - b.n);
+  const sections = ordered.map(m => {
+    const items = m.ing.map(([name, unit, qty]) =>
+      `  - ${name} (${fmtQty(unit, qty)})`
+    ).join('\n');
+    return `${m.icon} ${m.name}\n${items}`;
+  });
+  return `THIS WEEK'S MEALS (serves 2, with leftovers)\n\n` + sections.join('\n\n');
+}
+
+function updatePreview(chosen){
+  const preview = document.getElementById('copyPreview');
+  if (chosen.length === 0){
+    preview.textContent = 'Select a meal to build your list.';
+    return;
+  }
+  preview.textContent = buildListText(chosen);
+}
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  selected.clear();
+  renderGrid(searchBox.value);
+  renderReceipt();
+});
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const chosen = MEALS.filter(m => selected.has(m.n));
+  if (chosen.length === 0){
+    showToast('Select a meal first');
+    return;
+  }
+  const text = document.getElementById('copyPreview').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Shopping list copied!'))
+    .catch(() => showToast('Could not copy — select and copy manually'));
+});
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+searchBox.addEventListener('input', () => renderGrid(searchBox.value));
+
+renderGrid('');
+renderReceipt();
+</script>
+
+</body>
+</html>
